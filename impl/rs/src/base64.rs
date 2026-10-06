@@ -1,9 +1,4 @@
-const BASE64_CHARS: [u8; 64] = [
-    b'A', b'B', b'C', b'D', b'E', b'F', b'G', b'H', b'I', b'J', b'K', b'L', b'M', b'N', b'O', b'P',
-    b'Q', b'R', b'S', b'T', b'U', b'V', b'W', b'X', b'Y', b'Z', b'a', b'b', b'c', b'd', b'e', b'f',
-    b'g', b'h', b'i', b'j', b'k', b'l', b'm', b'n', b'o', b'p', b'q', b'r', b's', b't', b'u', b'v',
-    b'w', b'x', b'y', b'z', b'0', b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9', b'+', b'/'
-];
+const BASE64_CHARS: [u8; 64] = *b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 // Base64 encode a slice of bytes
 pub fn base64_encode(input: String) -> String {
@@ -28,7 +23,7 @@ pub fn base64_encode(input: String) -> String {
         result.push(BASE64_CHARS[index] as char);
     }
 
-    while result.len() % 4 != 0 {
+    while !result.len().is_multiple_of(4) {
         result.push('=');
     }
 
@@ -53,6 +48,11 @@ pub fn base64_decode(encoded: &str) -> Option<Vec<u8>> {
             None => return None,
         };
 
+        // data after padding is malformed
+        if padding > 0 {
+            return None;
+        }
+
         buffer = (buffer << 6) | value;
         bits += 6;
 
@@ -63,7 +63,15 @@ pub fn base64_decode(encoded: &str) -> Option<Vec<u8>> {
         }
     }
 
-    if bits >= 6 || padding > 2 || (padding > 0 && bits > 0) {
+    // padding is optional, but when present it must match the leftover bits
+    let valid_padding = match padding {
+        0 => true,
+        1 => bits == 2,
+        2 => bits == 4,
+        _ => false,
+    };
+
+    if bits >= 6 || !valid_padding {
         return None;
     }
 

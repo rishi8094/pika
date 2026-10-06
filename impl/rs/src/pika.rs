@@ -123,7 +123,7 @@ impl Pika {
             format!(
                 "{}_{}",
                 prefix,
-                base64_encode(format!("_s_{}_{}", hex_string, snowflake.as_str()))
+                base64_encode(format!("_s_{}_{}", hex_string, snowflake.as_str())).replace('=', "")
             )
         } else {
             format!("{}_{}", prefix, base64_encode(snowflake).replace('=', ""))
