@@ -28,7 +28,7 @@ impl Snowflake {
     }
 
     #[inline]
-    pub fn gen(&mut self) -> String {
+    pub fn generate(&mut self) -> String {
         self.gen_with_ts(now_timestamp())
     }
 
@@ -69,12 +69,13 @@ impl Snowflake {
     }
 }
 
-mod test {
+#[cfg(test)]
+mod tests {
     #[test]
     fn generate_snowflake() {
         // if the node_id >= 1024 it will go to 0?
         let mut sf = super::Snowflake::new_with_nodeid(650_153_600_000, 1023);
-        let snowflake = sf.gen();
+        let snowflake = sf.generate();
 
         let deconstruct = sf.decode(snowflake.as_str());
 
@@ -87,8 +88,8 @@ mod test {
         let mut sf = super::Snowflake::new_with_nodeid(650_153_600_000, 1023);
 
         // when the seq is 4096, the next snowflake will be 0
-        let snowflakes: Vec<String> = (0..4096).map(|_| sf.gen()).collect();
-        let last_snowflake = sf.gen();
+        let snowflakes: Vec<String> = (0..4096).map(|_| sf.generate()).collect();
+        let last_snowflake = sf.generate();
 
         for (sequence, snowflake) in snowflakes.iter().enumerate() {
             let deconstruct = sf.decode(snowflake.as_str());

@@ -1,7 +1,7 @@
 use std::io::Error;
 
-use rand::rngs::OsRng;
-use rand::RngCore;
+use rand::TryRng;
+use rand::rngs::SysRng;
 
 use crate::base64::{base64_decode, base64_encode};
 use crate::snowflake::{self, Snowflake};
@@ -99,7 +99,7 @@ impl Pika {
         }
     }
 
-    pub fn gen(&mut self, prefix: &str) -> Result<String, Error> {
+    pub fn generate(&mut self, prefix: &str) -> Result<String, Error> {
         let valid_prefix = prefix
             .chars()
             .all(|c| c.is_ascii_alphanumeric() || c == '_')
@@ -112,11 +112,11 @@ impl Pika {
 
         assert!(prefix_record.is_some(), "Prefix not found: {prefix}");
 
-        let snowflake = self.snowflake.gen();
+        let snowflake = self.snowflake.generate();
 
         let id = if prefix_record.unwrap().secure {
             let mut bytes = [0u8; 16];
-            OsRng.fill_bytes(&mut bytes);
+            SysRng.try_fill_bytes(&mut bytes).map_err(Error::other)?;
 
             let hex_string = hex::encode(bytes);
 
@@ -161,10 +161,10 @@ mod tests {
             },
         );
 
-        let id = pika.gen("test").unwrap();
+        let id = pika.generate("test").unwrap();
         let deconstructed = pika.deconstruct(&id);
 
-        let s_id = pika.gen("s_test").unwrap();
+        let s_id = pika.generate("s_test").unwrap();
 
         let s_deconstructed = pika.deconstruct(&s_id);
 
@@ -196,7 +196,7 @@ mod tests {
             },
         );
 
-        let id = pika.gen("test").unwrap();
+        let id = pika.generate("test").unwrap();
         let deconstructed = pika.deconstruct(&id);
 
         assert_eq!(deconstructed.node_id, 622);
