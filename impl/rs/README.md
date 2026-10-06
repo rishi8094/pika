@@ -34,10 +34,10 @@ let mut pika = Pika::new(
     },
 );
 
-pika.gen("user").unwrap();
+pika.generate("user").unwrap();
     // => user_Mzc5ODk1NTI4NzgxMTY4NjQ
 
-pika.gen("sk").unwrap()
+pika.generate("sk").unwrap()
     // => sk_c19iMGI0NTM4ZjU3ZThjYTIyZThjNjNlMTgwOTg5MWMyM18zODA2NTE5MjcwNDc5NDYyNA
 ```
 
